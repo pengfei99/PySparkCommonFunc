@@ -1,7 +1,10 @@
 import itertools
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as f
-
+""" Context:
+Suppose we have a dataframe which contains multiple columns. and we want to convert these column into a single column
+For example |A|B|C| -> |[A,B,C]| 
+"""
 """
 ######### Scenario1. If you want to covert only two columns, you can just use map type in the converted column ######
 """
@@ -112,7 +115,7 @@ def scenario4(df):
 def main():
     spark = SparkSession.builder \
         .master("local") \
-        .appName("FaceDetection") \
+        .appName("ConvertMultiColumnToOne") \
         .getOrCreate()
 
     source_data = [
