@@ -43,7 +43,22 @@ def solution5(df, col_name):
     return [row[0] for row in df.select(col_name).toLocalIterator()]
 
 
-""" Performance:  """
+""" Performance: 
+ 
+ 
+Method  | ONE THOUSAND	| HUNDRED THOUSAND	| HUNDRED MILLION
+toPandas|	0.32	    |       0.35	    |   18.12
+flatMap	|   0.55	    |       0.5	        |   57.5
+map	    |   0.39	    |       0.77	    |   60.6
+list comprehension|	0.85|   	5.18	
+toLocalIterator| 1.44	|       1.34	
+
+Note that the toPandas solution has the best performance, map and flatMap are almost equal.  
+The list comprehension approach failed and the toLocalIterator took more than 800 seconds to complete on the dataset 
+with a hundred million rows, so they are not suitable for big data.
+ """
+
+
 def main():
     spark = SparkSession.builder \
         .master("local") \
