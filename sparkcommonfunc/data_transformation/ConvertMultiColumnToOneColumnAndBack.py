@@ -1,6 +1,8 @@
 import itertools
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as f
+from pyspark.sql.types import *
+
 """ Context:
 Suppose we have a dataframe which contains multiple columns. and we want to convert these column into a single column
 For example |A|B|C| -> |[A,B,C]| 
@@ -14,7 +16,7 @@ def scenario1(source_df):
     # In the following example, we convert two column key, value to one column called "target" which has map type
     # "key" column is the key of the map, "value" column is the value of the map
     target_df = source_df.withColumn("target", f.create_map("key", "value"))
-    print("###################### Convert two column into one ######################")
+    print("###################### Scenario_1: Convert two column into one ######################")
     target_df.show()
     print("###################### Note the target column has type map ######################")
     target_df.printSchema()
@@ -36,7 +38,7 @@ def scenario2(source_df):
     target_df = source_df.withColumn('target',
                                      f.struct(*[f.col('key').alias('t_key'), f.col("content").alias('t_content'),
                                                 f.col("value").alias('t_value')]))
-    print("###################### Convert three column into one ######################")
+    print("###################### Scenario_2: Convert three column into one ######################")
     target_df.show()
     print("###################### Note the target column has type struct ######################")
     target_df.printSchema()
@@ -54,6 +56,13 @@ We already see how to do in scenario2, but with two step. We can also do it in o
 struct 
 ######
 """
+# If we have a want to re
+schema = ArrayType(
+    StructType([
+        StructField("t_key", StringType(), False),
+        StructField("t_content", StringType(), False),
+        StructField("t_value", LongType(), False)
+    ]))
 
 
 def scenario3(source_df):
@@ -61,7 +70,7 @@ def scenario3(source_df):
         f.struct(
             *[f.col("key").alias("t_key"), f.col("content").alias("t_content"),
               f.col("value").alias("t_value")])).alias("target_list"))
-    print("######################Group and convert in one step ######################")
+    print("######################Scenario_3: Group and convert in one step ######################")
     target_df.show(5, False)
     print("###################### Note the target_list column has type array of struct ######################")
     target_df.printSchema()
@@ -69,10 +78,11 @@ def scenario3(source_df):
 
 
 """
-##### Scenario4. After groupby, the target_list column has type array(struct(key,content,value)). To access the value 
+######################## Scenario4. Get field values of nested struct type from column ###################
+After groupby, the target_list column has type array(struct(key,content,value)). To access the value 
 of columns with complex struct, we need to understand how a column is organized. It can be primitive(e.g. int, bool),
 array, or struct. In the following example, we have an array of struct. 
-######
+
 """
 
 
@@ -98,18 +108,53 @@ def scenario4(df):
     #  |-- name: string (nullable = true)
     #  |-- target_list: array (nullable = true)
     #  |    |-- element: struct (containsNull = false)
-    #  |    |    |-- t.key: string (nullable = true)
-    #  |    |    |-- t.content: string (nullable = true)
-    #  |    |    |-- t.value: long (nullable = true)
+    #  |    |    |-- t_key: string (nullable = true)
+    #  |    |    |-- t_content: string (nullable = true)
+    #  |    |    |-- t_value: long (nullable = true)
     # access value of each row
+    print("######################Scenario_4: Get field values of nested struct type from column ######################")
+    print("In pyspark: A row of df acts as an dict. The column name is the key, the data is the value.")
+    print("To return the value of a column, we just select the column name")
     df.select(df.target_list).show()
     # target_list is an array of struct, so to access the first element(a struct) of the array
-    df.select(df.target_list[0]).show()
+    print("In our case, the column type is an array of object. To access each object, we can use its index")
+    print("If there is no element in the list at the requested index, it returns null")
+    df.select(df.target_list[2]).show()
     # to access the field of a struct
+    print("To access the field value, we use obj.filed_name")
     df.select(df.target_list[0].t_key).show()
     # a udf which append three field as a single string
-    transform_df = df.withColumn("test", Show_Content_UDF("target_list"))
+    print("Use a udf to concat all field value as a string")
+    transform_df = df.withColumn("concat_field", Show_Content_UDF("target_list"))
     transform_df.show(5, False)
+
+
+"""
+######################## Scenario 5. Convert nested struct type column to multi primitive type col ###################
+Very important Note: The field name should not contain ".". Because it will cause confusion when we want to access
+them
+"""
+
+
+def scenario5(df):
+    # The schema of df
+    # root
+    #  |-- name: string (nullable = true)
+    #  |-- target_list: array (nullable = true)
+    #  |    |-- element: struct (containsNull = false)
+    #  |    |    |-- t_key: string (nullable = true)
+    #  |    |    |-- t_content: string (nullable = true)
+    #  |    |    |-- t_value: long (nullable = true)
+
+    # Because we have a list of struct, the select returns a list
+    print("Because we have a list of struct, the select returns a list")
+    df.select(df.name.alias("name"), df.target_list.t_key.alias("key"),
+              df.target_list.t_value.alias("value")).show()
+
+    # if we want to primitive column, we need to explode the list first
+    print("Because we explode the list of struct, the select returns primitive type")
+    df.withColumn("target", f.explode("target_list")).select(f.col("name"), f.col("target.t_key").alias("key"),
+                                                             f.col("target.t_value").alias("value")).show()
 
 
 def main():
@@ -139,7 +184,10 @@ def main():
     df = scenario3(source_df)
 
     # run scenario 4
-    scenario4(df)
+    # scenario4(df)
+
+    # run scenario 5
+    scenario5(df)
 
 
 if __name__ == "__main__":
