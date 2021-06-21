@@ -1,4 +1,5 @@
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import col
 
 """ Introduction: pyspark.sql.DataFrame.join(otherDf, onCond=None,how=None) 
 The join function joins one df with another.
@@ -76,7 +77,7 @@ def scenario3(emp_df, dept_df):
         (emp_df.emp_dept_id == dept_df.dept_id) & (emp_df.dept_creation_year == dept_df.dept_creation_year)]
     and_multi_cond_inner_join = emp_df.join(dept_df, and_implicit_cond, "inner")
     print("Scenario3 print and_multi_cond_inner_join:")
-    and_multi_cond_inner_join.show()
+    and_multi_cond_inner_join.show(truncate=False)
 
     # an or multi cond join
     or_cond = [(emp_df.emp_dept_id == dept_df.dept_id) | (emp_df.dept_creation_year == dept_df.dept_creation_year)]
@@ -106,7 +107,7 @@ def scenario4(emp_df, dept_df):
     emp_df_rename = emp_df.select("name", "emp_dept_id", "dept_creation_year").withColumnRenamed("emp_dept_id",
                                                                                                  "dept_id")
     print("Scenario 4 output: ")
-    emp_df_rename.join(dept_df, cond, "inner").show()
+    emp_df_rename.join(dept_df, cond, "inner").show(truncate=False)
 
 
 """ Scenario5: outer join 
@@ -114,6 +115,11 @@ Outer (a.k.a full, fullouter join) returns all rows from both datasets, where jo
 match it returns null on respective record columns.
 
 You can notice that the following 3 mode returns the same result.
+note : you will find the output df has two rows contains null,
+        row 1: dept_id = 50, where the emp_dept_id does not have this value
+        row 2: emp_dept_id = 150, where the dept_id does not have this value 
+    
+
 """
 
 
@@ -127,6 +133,114 @@ def scenario5(emp_df, dept_df):
     emp_df.join(dept_df, emp_df.emp_dept_id == dept_df.dept_id, mode3).show()
 
 
+""" Scenario6: left outer join 
+Left (a.k.a Leftouter join) returns all rows from the left dataset, when match join expression does not 
+match it assigns null on respective record columns.
+
+You can notice that the following 2 mode returns the same result.
+note : you will find the output df has one row contains null,
+        row 1: emp_dept_id = 150, where the dept_id does not have this value 
+Because in emp_df.join(), emp_df is consider as left side df, and dept_df is the right side
+So all rows of left df are conserved, for those who does not have a match on right hand df, the right hand df columns 
+are filled with null
+
+For the rows of the right df who does not have a match on the left df, they are dropped (e.g. row with dept_id =50)
+  
+"""
+
+
+def scenario6(emp_df, dept_df):
+    mode1 = "left"
+    mode2 = "leftouter"
+    print("Scenario 6 output LeftOuterJoin: ")
+    emp_df.join(dept_df, emp_df.emp_dept_id == dept_df.dept_id, mode1).show()
+    emp_df.join(dept_df, emp_df.emp_dept_id == dept_df.dept_id, mode2).show()
+
+
+""" Scenario7: Right outer join 
+Right (a.k.a Rightouter join) returns all rows from the right dataset, when match join expression does not 
+match it assigns null on respective record columns. For the rows of the left hand df who does not 
+have a match on the right df, they are dropped (e.g. row with emp_dept_id =50)
+
+
+You can notice that the following 2 mode returns the same result.
+note : you will find the output df has one row contains null,
+        row 1: dept_id = 50, where the emp_dept_id does not have this value 
+Because in emp_df.join(), emp_df is consider as left side df, and dept_df is the right side
+So all rows of right hand (i.e. dept_df) df are conserved, for those who does not have a 
+match on left hand df, the left hand df columns are filled with null
+
+
+"""
+
+
+def scenario7(emp_df, dept_df):
+    mode1 = "right"
+    mode2 = "rightouter"
+    print("Scenario 7 output RightOuterJoin: ")
+    emp_df.join(dept_df, emp_df.emp_dept_id == dept_df.dept_id, mode1).show()
+    emp_df.join(dept_df, emp_df.emp_dept_id == dept_df.dept_id, mode2).show()
+
+
+""" Scenario8: Left Semi Join
+leftsemi join equals to a inner join and a select of the columns of left hand side df. 
+As a result, all columns from the right dataset are ignored. 
+
+Note the result of below example, we only have the left hand side columns, and the row 
+where emp_dep_id=150 is dropped, because there is no match no the right side.
+
+"""
+
+
+def scenario8(emp_df, dept_df):
+    print("Scenario 8 output LeftSemiJoin: ")
+    emp_df.join(dept_df, emp_df.emp_dept_id == dept_df.dept_id, "leftsemi").show()
+
+
+""" Scenario9: Left Anti Join
+leftanti join does the opposite of the inner join and select of the columns of left hand side df. 
+As a result, all columns from the right dataset are ignored. 
+
+Note the result of below example, we only have the left hand side columns. We only had one
+one row where emp_dep_id=150, because this row has no match no the right side.
+"""
+
+
+def scenario9(emp_df, dept_df):
+    print("Scenario 9 output LeftAntiJoin: ")
+    emp_df.join(dept_df, emp_df.emp_dept_id == dept_df.dept_id, "leftanti").show()
+
+
+""" Scenario10: SelfJoin
+All above join type can be applied to the same dataframe 
+
+Below example shows an inner join on the same dataframe which use join condition superior_emp_id= emp_id to generate 
+a table with his superior name
+"""
+
+
+def scenario10(emp_df):
+    print("Scenario 10 output self inner join: ")
+    emp_df.alias("emp1").join(emp_df.alias("emp2"), col("emp1.superior_emp_id") == col("emp2.emp_id"), "inner") \
+        .select(col("emp1.emp_id").alias("emp_id"), col("emp1.name").alias("name"),
+                col("emp2.emp_id").alias("superior_emp_id"), col("emp2.name").alias("superior_name")) \
+        .show(truncate=False)
+
+
+""" Scenario 11: pure SQL"""
+
+
+def scenario11(spark, emp_df, dept_df):
+    emp_df.createOrReplaceTempView("EMP")
+    dept_df.createOrReplaceTempView("DEPT")
+    print("Scenario 11 output inner join with pure sql: ")
+    joinDF = spark.sql("select * from EMP e, DEPT d where e.emp_dept_id == d.dept_id") \
+        .show(truncate=False)
+
+    joinDF2 = spark.sql("select * from EMP e INNER JOIN DEPT d ON e.emp_dept_id == d.dept_id") \
+        .show(truncate=False)
+
+
 def main():
     spark = SparkSession.builder \
         .master("local") \
@@ -138,7 +252,7 @@ def main():
            (3, "Williams", 1, "2018", "21", "M", 1000),
            (4, "Jones", 2, "2005", "31", "F", 2000),
            (5, "Brown", 2, "2010", "30", "", -1),
-           (6, "Brown", 2, "2010", "150", "", -1)
+           (6, "Foobar", 2, "2010", "150", "", -1)
            ]
     emp_col_names = ["emp_id", "name", "superior_emp_id", "dept_creation_year",
                      "emp_dept_id", "gender", "salary"]
@@ -159,7 +273,7 @@ def main():
     dept_df.show(truncate=False)
 
     # run scenario 1 for inner join
-    # scenario1(emp_df, dept_df)
+    scenario1(emp_df, dept_df)
 
     # run scenario 2
     # scenario2_bad(emp_df, dept_df)
@@ -172,7 +286,25 @@ def main():
     # scenario4(emp_df, dept_df)
 
     # run scenario 5
-    scenario5(emp_df, dept_df)
+    # scenario5(emp_df, dept_df)
+
+    # run scenario 6
+    # scenario6(emp_df, dept_df)
+
+    # run scenario 7
+    # scenario7(emp_df, dept_df)
+
+    # run scenario 8
+    # scenario8(emp_df, dept_df)
+
+    # run scenario 9
+    # scenario9(emp_df, dept_df)
+
+    # run scenario 10
+    # scenario10(emp_df)
+
+    # run scenario 11
+    scenario11(spark, emp_df, dept_df)
 
 
 if __name__ == "__main__":
