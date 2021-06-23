@@ -1,6 +1,6 @@
 from pyspark.sql import SparkSession, Row
 from pyspark.sql.functions import lit
-from pyspark.sql.functions import col
+from pyspark.sql.functions import col, expr
 
 # from pyspark.sql import
 
@@ -86,22 +86,106 @@ def exp4(spark):
     data = [(100, 2, 3), (200, 3, 4), (300, 4, 5)]
     df = spark.createDataFrame(data).toDF("x", "y", "z")
     # basic arithmetic operations
-    df.select(df.x+df.y).show()
+    print("exp4 output: arithmetic operations on two numeric columns")
+    df.select(df.x + df.y).show()
     df.select(df.x - df.y).show()
     df.select(df.x * df.y).show()
     df.select(df.x / df.y).show()
     df.select(df.x % df.y).show()
 
     # we can use eval function to return a bool value
+    print("exp4 output: comparison operations on two numeric columns")
     df.select(df.y > df.z).show()
     df.select(df.y < df.z).show()
     df.select(df.y == df.z).show()
+
+
+""" Exp5 Rename column 
+To rename column, we have two functions alias and name
+"""
+
+
+def exp5(df):
+    print("exp5 output: rename column with name function")
+    df.select(df.fname.name("first_name")).show()
+    print("exp6 output: rename column with alias function")
+    df.select(expr("fname ||','|| lname").alias("full_name")).show()
+
+
+""" Exp6 Sort column by descending and ascending order 
+- asc(): Returns ascending order of the column.
+- asc_nulls_first(): Returns null values first then non-null values.
+- asc_nulls_last(): Returns null values after non-null values.
+- desc(): Returns descending order of the column.
+- desc_nulls_first(): null values appear before non-null values.
+- desc_nulls_last(): null values appear after non-null values.
+"""
+
+
+def exp6(df):
+    print("exp6 output: sort column by ascending order")
+    df.select(df.fname.asc()).show()
+    print("exp6 output: sort column by ascending order with null first")
+    # df.select(df.id.asc_nulls_first()).show()
+    print("exp6 output: sort column by ascending order with null last")
+    # df.select(df.id.asc_nulls_last()).show()
+    print("exp6 output: sort column by descending order")
+    df.select(df.fname.desc()).show()
+
+
+""" Exp 7 Convert the column's data Type by using cast() & astype()
+
+"""
+
+
+def exp7(df):
+    print("exp7 output: convert type by using cast")
+    df1 = df.select(df.fname, df.id.cast("int"))
+    df1.printSchema()
+    df1.show()
+
+    print("exp7 output: convert type by using astype")
+    df2 = df.select(df.fname, df.id.astype("int"))
+    df2.printSchema()
+    df2.show()
+
+
+""" Exp 8 filter column with specific values
+We have several functions which can evaluate column value with specific conditions and return a bool, as they return a
+bool value, we can use them inside filter. 
+- between(lowerBound, upperBound): Checks if the columns values are between lower and upper bound. Returns 
+                                  boolean value.
+- contains(arg): Check if String contains in another string. Returns boolean value.
+- startswith(arg): Check if String starts with another string. Returns boolean value
+- endswith(other): Check if String starts with another string. Returns boolean value	
+"""
+
+
+def exp8(df):
+    # Between function
+    print("exp8 output: check id between 100, 300")
+    # note the id column has type string, not int.
+    df.printSchema()
+    df.withColumn("between", df.id.between(100, 300)).show()
+    print("exp8 output: use between inside a filter")
+    df.filter(df.id.between(100, 300)).show()
+
+    # Contains function
+    print("exp8 output: check name contains e")
+    df.withColumn("has_e", df.fname.contains("e")).show()
+
+    # starts/end with
+    print("exp8 output: check name starts with Tom")
+    df.withColumn("starts_with", df.fname.startswith("Tom")).show()
+    print("exp8 output: check name ends with and")
+    df.withColumn("starts_with", df.fname.endswith("and")).show()
 
 
 def main():
     spark = SparkSession.builder \
         .master("local") \
         .appName("ColumnClassExample") \
+        .config("spark.executor.memory", "4g") \
         .getOrCreate()
 
     # run exp1
@@ -114,7 +198,26 @@ def main():
     # exp3(spark)
 
     # run exp4
-    exp4(spark)
+    # exp4(spark)
+
+    data = [("James", "Bond", "100", None),
+            ("Ann", "Varsa", "200", 'F'),
+            ("Tom Cruise", "XXX", "400", ''),
+            ("Tom Brand", None, None, 'M')]
+
+    columns = ["fname", "lname", "id", "gender"]
+    df = spark.createDataFrame(data, columns)
+    # run exp5
+    # exp5(df)
+
+    # run exp6, failed do not know why
+    # exp6(df)
+
+    # run exp7
+    # exp7(df)
+
+    # run exp8
+    exp8(df)
 
 
 if __name__ == "__main__":
