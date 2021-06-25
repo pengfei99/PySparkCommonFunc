@@ -286,7 +286,13 @@ def exp12(spark):
     df = spark.createDataFrame(data, schema)
     df.printSchema()
 
-    # Get field by using implicit method
+    # Get item of array, map column
+    # For the array column, getItem takes the index of item as argument
+    # For the map column, getItem takes the key of item as argument
+    print("exp12 output:  Get value of array, map type column by using getItem.")
+    df.select(df.languages.getItem(1), df.properties.getItem("hair")).show()
+
+    # Get field of struct column by using implicit method
     print("exp12 output:  get field value by using . ")
     df.select(df.name.fname.alias("first_name"), df.name.lname.alias("last_name")).show()
     print("exp12 output:  get field value by using getField ")
