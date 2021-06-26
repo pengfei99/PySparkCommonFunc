@@ -5,7 +5,10 @@ from pyspark.sql.types import StructField, StructType, StringType, ArrayType, Ma
 
 # from pyspark.sql import
 
-"""Exp1: Create a column by using lit"""
+"""Exp1: Create a column by using lit
+pyspark.sql.functions.lit(col): Creates a Column of literal value. The argument can be all primitive type 
+(int, string, bool)
+"""
 
 
 def exp1():
@@ -314,7 +317,7 @@ def main():
         .getOrCreate()
 
     # run exp1
-    # exp1()
+    exp1()
 
     # run exp2
     # exp2(spark)
@@ -354,7 +357,7 @@ def main():
     # exp11(df)
 
     # run exp12
-    exp12(spark)
+    # exp12(spark)
 
 
 if __name__ == "__main__":
