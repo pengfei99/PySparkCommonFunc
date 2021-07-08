@@ -1,5 +1,12 @@
 from pyspark.sql import SparkSession, DataFrame
-from pyspark.sql.functions import lit, unix_timestamp, col, from_unixtime
+from pyspark.sql.functions import lit, unix_timestamp, col, from_unixtime, to_timestamp
+
+"""
+
+In exp1, exp2, we deal with unix timestamp
+
+In exp3,
+"""
 
 """
 Exp1: unix_timestamp() function is used to get the current time and to convert the time string in format 
@@ -54,6 +61,33 @@ def exp2(df: DataFrame):
     df1.show(truncate=False)
 
 
+""" Exp3 
+to_timestamp(col, format): the default format is yyyy-MM-dd HH:mm:ss It converts a string date to spark timestamp.
+If failed, return null.
+
+To convert timestamp back to string, just use cast("String")
+"""
+
+
+def exp3(df: DataFrame,spark:SparkSession):
+    # try to remove the format of timestamp_2 or 3, and see what happens
+    df1 = df.withColumn("timestamp_1", to_timestamp("timestamp_1")) \
+        .withColumn("timestamp_2", to_timestamp("timestamp_2", "MM-dd-yyyy HH:mm:ss")) \
+        .withColumn("timestamp_3", to_timestamp("timestamp_3", "MM-dd-yyyy"))
+    # note the column type is not string or long, but timestamp
+    print("Exp3 Convert string to spark time stamp")
+    df1.printSchema()
+    df1.show()
+
+    df2 = df1.select(col("timestamp_3").cast("string"))
+    print("Exp3 convert spark time stamp back to string")
+    df2.printSchema()
+    df2.show()
+
+    print("Exp3 use to_timestamp in sql")
+    spark.sql("select to_timestamp('06-24-2019 12:01:19.000','MM-dd-yyyy HH:mm:ss.SSSS') as timestamp")
+
+
 def main():
     spark = SparkSession.builder.master("local[2]").appName("TimeDateExp").getOrCreate()
     data = [("2019-07-01 12:01:19", "07-01-2019 12:01:19", "07-01-2019"),
@@ -66,10 +100,13 @@ def main():
     df.show(truncate=False)
 
     # run exp1
-    df_seconds = exp1(df)
+    # df_seconds = exp1(df)
 
     # run exp2
-    exp2(df_seconds)
+    # exp2(df_seconds)
+
+    # run exp3
+    exp3(df,spark)
 
 
 if __name__ == "__main__":
