@@ -87,10 +87,12 @@ def exp4(spark: SparkSession):
     #
     try:
         df1.select("name", Null_Safe_Name_Count_UDF("name")).show()
-    except exeception as e:
-        print("udf failed")
+    except Exception as e:
+        print("udf failed error msg: {}".format(e))
 
-def exp5()
+
+def exp5():
+    pass
 
 
 def main():
