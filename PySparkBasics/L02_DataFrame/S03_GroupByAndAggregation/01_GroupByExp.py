@@ -5,7 +5,7 @@ groups on DataFrame and perform aggregate functions on the grouped data.
 roupBy(col1 : scala.Predef.String, cols : scala.Predef.String*) :
       org.apache.spark.sql.RelationalGroupedDataset
 
-Note that, it and take one or more column names and returns GroupedData object which can use below aggregate functions.
+Note that, it can take one or more column names and returns GroupedData object which can use below aggregation functions.
 - count() - Returns the count of rows for each group.
 - mean() - Returns the mean of values for each group.
 - max() - Returns the maximum of values for each group.
@@ -14,6 +14,8 @@ Note that, it and take one or more column names and returns GroupedData object w
 - avg() - Returns the average for values for each group.
 - agg() - Using agg() function, we can calculate more than one aggregate at a time.
 - pivot() - This function is used to Pivot the DataFrame.
+
+
 """
 from pyspark.sql import SparkSession
 from pyspark.sql import DataFrame
