@@ -70,10 +70,15 @@ def exp2(spark: SparkSession):
     df_no_shuffle.show()
     print("After withColumn data frame partition: {}".format(df_no_shuffle.rdd.getNumPartitions()))
 
-    # Before spark 3.0, If the operation(e.g. groupBy, union, join) trigger a shuffle, the data frame will be
-    # transferred between multiple executors and even machines and finally repartition data into 200 partitions
+    # If the operation(e.g. groupBy, union, join) trigger a shuffle, the data frame will be
+    # transferred between multiple executors and even machines and finally reparti data into 200 partitions
     # by default. PySpark default defines shuffling partition to 200 using "spark.sql.shuffle.partitions" configuration.
-    # After spark 3.0, it's not the case, after shuffle, the data frame has same partition.
+    # If you want to control the shuffle partitions, you can add following line
+    # spark.conf.set("spark.sql.shuffle.partitions",10)
+    # In scala, you can add following line
+    # import org.apache.spark.sql.internal.SQLConf.SHUFFLE_PARTITIONS
+    # spark.sessionState.conf.setConf(SHUFFLE_PARTITIONS, 2)
+
     df_with_shuffle = df.groupBy("id").count()
     df_with_shuffle.show()
     print("After GroupBy data frame partition: {}".format(df_with_shuffle.rdd.getNumPartitions()))
