@@ -1,6 +1,8 @@
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.functions import row_number, rank, dense_rank, percent_rank, ntile, cume_dist, lag, lead, col, avg, \
-    min, max, sum, round, count, datediff, unix_timestamp, stddev, collect_list
+    min, max, sum, round, count, datediff, unix_timestamp, stddev, collect_list, element_at, size, sort_array, \
+    broadcast, spark_partition_id, lit, coalesce
+
 from pyspark.sql.window import Window
 
 """ 1. Window function in spark
@@ -106,6 +108,8 @@ def exp1(df: DataFrame):
     print("Exp1: row number over name window order by price")
     df1.printSchema()
     df1.show()
+    print("Exp1: show partition id after window functions")
+    df1.withColumn("partition_id", spark_partition_id()).show(truncate=False)
 
     # create a column with rank
     # Note that for Alex partition, there is no rank2, because we have two items in rank 1, the third item goes to
@@ -226,8 +230,28 @@ def exp3(df: DataFrame):
 
 
 """ Exp4
-Rows between, Range between
+To build range window specifications, we need to use the two following functions 
+- rowsBetween(start:Long,end:Long)->WindowSpec : Here start, end are the index of rows relative to current rows, -1 
+    means 1 row before current row, 1 mean 1 row after current row
+- rangeBetween(start:Long, end:Long)->WindowSpec : The start, end boundary in rangeBetween is based on row value 
+    relative to currentRow. The value definition of the constant values used in range functions:
+     -- Window.currentRow = 0
+     -- Window.unboundedPreceding = Long.MinValue
+     -- Window.unboundedFollowing = Long.MaxValue
 
+The [start, end] index are all inclusive. Their value can be 
+- Window.unboundedPreceding
+- Window.unboundedFollowing
+- Window.currentRow. 
+- Or a value relative to Window.currentRow, either negative or positive.
+
+Some examples of rowsBetween:
+- rowsBetween(Window.currentRow, 2): From current row to the next 2 rows 
+- rowsBetween(-3, Window.currentRow): From the previous 3 rows to the current row. 
+- rowsBetween(-1, 2): Frame contains previous row, current row and the next 2 rows 
+- rowsBetween(Window.currentRow, Window.unboundedFollowing): From current row to all next rows 
+- rowsBetween(Window.unboundedPreceding, Window.currentRow): From all previous rows to the current row. 
+- rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing): all rows in the window. 
 """
 
 
@@ -243,7 +267,12 @@ def exp4(df: DataFrame):
     # Example of rowsBetween
     # last 2 row(current and the row before it) range window specification
     last2 = win_name_ordered.rowsBetween(-1, Window.currentRow)
-    df.withColumn("max_of_last2", max("price").over(win_name_ordered.rowsBetween(last2))).show(truncate=False)
+    df.withColumn("max_of_last2", max("price").over(last2)).show(truncate=False)
+
+    # max of all following row
+    following = win_name_ordered.rowsBetween(Window.currentRow, Window.unboundedFollowing)
+    df.withColumn("max_of_following", max("price").over(following)).show(truncate=False)
+
     #
     df1 = df.withColumn("unix_date", unix_timestamp("date", "yyyy-MM-dd"))
     print("Exp4 convert string date to long unix timestamp")
@@ -251,6 +280,9 @@ def exp4(df: DataFrame):
 
     # Example of rangeBetween
     # get the avg of a specific range of a window
+    # 0 is the relative unix_date of current row, the frame boundary of rangeBetween(-day_to_seconds(30), 0)
+    # for row "Alex|2018-02-18|Gloves |5 |1518908400|" will be (1518908400-(30*86400),1518908400). All rows that
+    # have unix_date column value in this frame boundary will be included in the frame.
     range_30 = win_name.orderBy(col("unix_date")).rangeBetween(-day_to_seconds(30), 0)
     df2 = df1.withColumn("30day_moving_avg", avg("price").over(range_30))
     print("Exp4 create a column that shows last 30 day avg before current row date")
@@ -264,6 +296,56 @@ def exp4(df: DataFrame):
         .withColumn("45day_moving_std", stddev("price").over(range_45))
     print("Exp4 create a column that shows the avg of 30 day before and 15 days after the current row date")
     df3.show(10, truncate=False)
+
+
+""" Exp5 Calculate Median in a window
+mean(avg) and median are commonly used in statistics. 
+- mean is cheap to calculate, but outliers can have large effect. For example, the income of population, if we have 9 
+  people has 10 dollar, and 1 person has 1010 dollar. The mean is 1100/10= 110. It does not represent any group's income. 
+- Median is expansive to calculate. But in certain cases median are more robust comparing to mean, since it will 
+  filter out outlier values. If we retake the previous example, the median will be 10 dollar, which represent a 
+  group's income
+"""
+
+
+def exp5(df: DataFrame):
+    win_name = Window.partitionBy("name")
+    win_name_ordered = win_name.orderBy("price")
+    # Rolling median
+    # we create a column of price list, then we use function element_at to get the middle element of the list
+    print("Exp5 Calculate rolling median for price column")
+    df.withColumn("price_list", collect_list("price").over(win_name_ordered)) \
+        .withColumn("rolling_median", element_at("price_list", (size("price_list") / 2 + 1).cast("int"))) \
+        .show(truncate=False)
+
+    # Global median with partition frame,
+    # as the window is not ordered, all element of the partition are in the same frame. The problem is the element
+    # of the list is not ordered, so the middle element of the list is not the median. To correct this, we need to
+    # sort the list
+    print("Exp5 Calculate global median for price column by using partition window and sort_array ")
+    df.withColumn("price_list", sort_array(collect_list("price").over(win_name))) \
+        .withColumn("sort_list_median", element_at("price_list", (size("price_list") / 2 + 1).cast("int"))) \
+        .show(truncate=False)
+
+    # Global median with range frame
+    # After orderBy, each row will have a rolling frame. To include all rows of the partition, we need to use range
+    # specification to change the default frame after orderBy.
+    # We use rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing) to include all rows of the partition
+    print("Exp5 Calculate global median for price column by using range frame")
+    # create a range window spec that contains all rows of the partition
+    win_range = win_name_ordered.rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+    df.withColumn("price_list", collect_list("price").over(win_range)) \
+        .withColumn("range_window_median", element_at("price_list", (size("price_list") / 2 + 1).cast("int"))) \
+        .show(truncate=False)
+
+    # We can also use groupBy and join to get the same result
+    df1 = df.groupBy("name").agg(sort_array(collect_list("price")).alias("price_list")) \
+        .select("name", "price_list",
+                element_at("price_list", (size("price_list") / 2 + 1).cast("int")).alias("groupBy_median"))
+    df1.show(truncate=False)
+    # The pyspark.sql.functions.broadcast(df) marks a DataFrame as small enough for use in broadcast joins.
+    df.join(broadcast(df1), "name", "inner").show(truncate=False)
+
 
 
 def main():
@@ -294,10 +376,15 @@ def main():
     # exp2(df)
 
     # run exp3
-    exp3(df)
+    # exp3(df)
 
     # run exp4
     # exp4(df)
+
+    # run exp5
+    # exp5(df)
+
+
 
 
 if __name__ == "__main__":

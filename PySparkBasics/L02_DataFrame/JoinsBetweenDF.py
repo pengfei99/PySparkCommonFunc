@@ -306,6 +306,8 @@ def main():
     # run scenario 11
     scenario11(spark, emp_df, dept_df)
 
+    # todo broadcast join https://mungingdata.com/apache-spark/broadcast-joins/
+
 
 if __name__ == "__main__":
     main()
