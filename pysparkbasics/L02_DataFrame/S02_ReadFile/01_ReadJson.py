@@ -103,6 +103,13 @@ def exp5(spark: SparkSession):
     df.show()
 
 
+""" Exp 6: Read json file with various options
+You can find all possible options in 
+https://spark.apache.org/docs/latest/api/python/reference/api/pyspark.sql.DataFrameReader.json.html
+
+"""
+
+
 def exp6(spark: SparkSession):
     root_path = "/home/pliu/Downloads/data"
     train = f"{root_path}/train.jsonl"
@@ -117,6 +124,10 @@ def exp6(spark: SparkSession):
     test_df.coalesce(1).write.options(header='True', delimiter=",").mode("overwrite").csv(f"{root_path}/test")
     val_df.coalesce(1).write.options(header='True', delimiter=",").mode("overwrite").csv(f"{root_path}/val")
 
+
+""" 
+
+"""
 
 
 def main():
