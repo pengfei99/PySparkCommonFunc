@@ -111,18 +111,19 @@ https://spark.apache.org/docs/latest/api/python/reference/api/pyspark.sql.DataFr
 
 
 def exp6(spark: SparkSession):
-    root_path = "/home/pliu/Downloads/data"
+    root_path = "/home/pliu/data_set/nlp/allo_cine"
     train = f"{root_path}/train.jsonl"
     test = f"{root_path}/test.jsonl"
     val = f"{root_path}/val.jsonl"
     train_df = spark.read.json(train)
     test_df = spark.read.json(test)
     val_df = spark.read.json(val)
-    print(f"tain_df has row: {train_df.count()}")
-    print(f"test_df has row: {test_df.count()}")
-    print(f"val_df has row: {val_df.count()}")
-    test_df.coalesce(1).write.options(header='True', delimiter=",").mode("overwrite").csv(f"{root_path}/test")
-    val_df.coalesce(1).write.options(header='True', delimiter=",").mode("overwrite").csv(f"{root_path}/val")
+    # print(f"tain_df has row: {train_df.count()}")
+    # print(f"test_df has row: {test_df.count()}")
+    # print(f"val_df has row: {val_df.count()}")
+    train_df.coalesce(1).write.options(header='True', delimiter="|").mode("overwrite").csv(f"{root_path}/train")
+    # test_df.coalesce(1).write.options(header='True', delimiter="|").mode("overwrite").csv(f"{root_path}/test")
+    val_df.coalesce(1).write.options(header='True', delimiter="|").mode("overwrite").csv(f"{root_path}/val")
 
 
 """ 
@@ -134,7 +135,7 @@ def main():
     spark = SparkSession.builder.master("local[2]").appName("read_json").getOrCreate()
 
     # run exp1
-    exp1(spark)
+    # exp1(spark)
 
     # run exp2
     # exp2(spark)
