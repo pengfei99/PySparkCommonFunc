@@ -200,7 +200,7 @@ Show aggregation functions on ordered frame and basic partitionBy frame
 In df1, we use a partition window specification, so the result is the same for all rows
 that are in the same partition.
 
-In df1, we use an ordered window specification, the result is different for each rows. 
+In df2, we use an ordered window specification, the result is different for each rows. 
 
 """
 
@@ -347,7 +347,6 @@ def exp5(df: DataFrame):
     df.join(broadcast(df1), "name", "inner").show(truncate=False)
 
 
-
 def main():
     spark = SparkSession.builder.master("local[2]").appName("Windows functions").getOrCreate()
     data = [('Alex', '2018-10-10', 'Paint', 80),
@@ -383,8 +382,6 @@ def main():
 
     # run exp5
     # exp5(df)
-
-
 
 
 if __name__ == "__main__":
