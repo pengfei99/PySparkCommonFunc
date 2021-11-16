@@ -119,3 +119,26 @@ Output:
   - The request with Id=8 was made by a banned client, so it is ignored.
   - Hence there are 2 unbanned request in total, 1 of which were canceled.
   - The Cancellation Rate is (1 / 2) = 0.50
+
+# sql solution
+
+```sql
+WITH unbanned 
+AS (
+    SELECT t.request_at as "Day", 1 AS "Requested",
+    CASE 
+        WHEN t.status LIKE "cancelled%" THEN 1
+        ELSE 0
+    END AS "Canceled"
+    From Trips t 
+    INNER JOIN Users u1 ON  t.client_id = u1.users_id
+    INNER JOIN Users u2 ON  t.driver_id = u2.users_id
+    WHERE u1.banned = "No"
+    AND  u2.banned = "No")
+    
+SELECT u.Day AS "Day", ROUND(SUM(u.Canceled)/SUM(u.Requested), 2) AS "Cancellation Rate"
+FROM unbanned u
+WHERE u.Day BETWEEN "2013-10-01" AND "2013-10-03"
+GROUP BY 1
+ORDER BY 1 ASC
+```
