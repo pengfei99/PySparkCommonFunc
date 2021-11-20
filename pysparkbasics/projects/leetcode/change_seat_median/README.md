@@ -58,3 +58,18 @@ Output:
 # Explanation: 
 
 Note that if the number of students is odd, there is no need to change the last one's seat.
+
+
+# Sql solution
+
+```sql
+select (case
+        when ((id%2)=1 and id!=(select count(*) from seat)) then id+1
+        when ((id%2)=0) then id-1
+        else id
+        end
+       ) id, 
+       student
+from seat
+order by id
+```
