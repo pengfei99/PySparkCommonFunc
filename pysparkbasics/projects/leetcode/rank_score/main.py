@@ -4,14 +4,14 @@ from pyspark.sql.window import Window
 
 
 def main():
-    spark = SparkSession.builder.master("local[2]").appName("change_seat").getOrCreate()
+    spark = SparkSession.builder.master("local[2]").appName("rank_scores").getOrCreate()
     path = "data/scores.csv"
     df = spark.read.option("header", "true").csv(path)
     df.show()
     df.printSchema()
     # The best solution is to use window function
     # build window spec
-    win_spec=Window.orderBy(col("score").desc())
+    win_spec = Window.orderBy(col("score").desc())
     df1 = df.withColumn("rank", dense_rank().over(win_spec)).drop("id")
     df1.show()
 
