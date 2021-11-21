@@ -26,6 +26,7 @@ def main():
     df1.show()
     # we can notice that we duplicate rows that has the same id. The duplicated rows for each month, only one row has
     # value, others are all null. So we need to group by rows by id and remove the duplicated null value rows
+    # Step2. use groupBy to remove all duplicated rows that only contains null
     df2 = df1.groupBy(col("id")).agg(collect_list(col("Jan_Revenue")).getItem(0).alias("Jan_Revenue"),
                                      collect_list(col("Feb_Revenue")).getItem(0).alias("Feb_Revenue"),
                                      collect_list(col("Mar_Revenue")).getItem(0).alias("Mar_Revenue"),
