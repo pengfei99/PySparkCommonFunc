@@ -3,7 +3,7 @@ from pyspark.sql.functions import when, col
 
 
 def main():
-    spark = SparkSession.builder.master("local[2]").appName("get_consecutive_numbers").getOrCreate()
+    spark = SparkSession.builder.master("local[2]").appName("02.get_consecutive_numbers").getOrCreate()
     path = "data/logs.csv"
     df = spark.read.option("header", "true").csv(path)
     df.show()
