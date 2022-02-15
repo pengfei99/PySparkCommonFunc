@@ -13,6 +13,7 @@ pandas = "^1.2.4"
 jupyter = "^1.0.0"
 ipykernel = "^6.0.3"
 datasets = "^1.11.0"
+Pillow = "^9.0.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
