@@ -1,0 +1,4 @@
+Text1|Text2|size|user
+hello|goodbye|5|{"name":"john","age":3}
+this|that|6.6|{"name":"betty","age":4}
+yes|no|-0.03|{"name":"bobby","age":5}

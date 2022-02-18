@@ -1,0 +1,4 @@
+Text1|Text2|size|user
+hello|goodbye|5|[{"name":"stop", "age":3}, {"name":"go", "age":6}]
+this|that|6.6|[{"name":"eggs", "age":4}, {"name":"bacon", "age":8}]
+yes|no|-0.03|[{"name":"apple", "age":5}, {"name":"pear", "age":10}]
