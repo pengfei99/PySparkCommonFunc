@@ -15,6 +15,7 @@ ipykernel = "^6.0.3"
 datasets = "^1.11.0"
 Pillow = "^9.0.1"
 xlrd = "^2.0.1"
+XlsxWriter = "^3.0.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
