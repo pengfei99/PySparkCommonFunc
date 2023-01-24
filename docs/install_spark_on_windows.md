@@ -44,7 +44,44 @@ We need to setup three environment variables here:
 You can follow below steps to create environment variables:
 1. Click on `search` toolbar, and type `environment`
 2. Select the result `Edit the system environment variables`
-3. A System Properties dialog box appears. In the lower-right corner, click Environment Variables and then click New in the next window.
+3. A System Properties dialog box appears. In the lower-right corner, click `Environment Variables` and then click `New` in the next window.
+![windows-new-environment-variable1.png](../images/windows-new-environment-variable1.png)
+4. Create a new `environment variables` called `SPARK_HOME`, and put the path of the spark binary which you just downloaded. In our case it's `C:\opt\spark-3.2.3`
+![windows-new-spark-env-variable.png](../images/windows-new-spark-env-variable.png)
+5. In the top box, click on the `Path` entry, then click `Edit`. Then add the `%SPARK_HOME%\bin` to the `Path`
+![windows-edit-path-variable-spark.png](../images/windows-edit-path-variable-spark.png)
+Be careful here, don't try to delete the existing rows in the system path. Just add Spark.
+![windows-add-spark-to-path.png](../images/windows-add-spark-to-path.png)
 
 
+> Note In the `Environment Variables` view, you have the upper part which edit the User env var(only effective for the current user). The lower part which edit the system env var (effective for users).  
 
+You can repeat the above process for `JAVA_HOME` and `HADOOP_HOME`. For the Hadoop, suppose we put the `winutils.exe` in `C:\opt\hadoop\bin\winutils.set`. Then we should set `C:\opt\hadoop` as the env var, and add the `%HADOOP_HOME%\bin` to the `Path`.
+
+## 4. Test your Spark installation
+
+1. Open a new `command-prompt` window using the right-click and Run as `administrator`
+
+2. To start Spark, enter:
+
+```shell
+C:\opt\spark-3.2.3\bin\spark-shell
+```
+
+3. The system should display several lines indicating the status of the application. You may get a Java pop-up. Select Allow access to continue.
+
+Finally, the Spark logo appears, and the prompt displays the `Scala shell`.
+
+4. You can view the spark web ui by using the  http://localhost:4040/. (You can replace localhost with the name of your system.)
+
+5. To test the spark functionality, Use below script
+```scala
+// create a RDD based on a list
+val rdd = sc.parallelize(List(1,2,3,4)
+// do a map operation             
+val square = rdd.map(x=>x*x)
+// do a spark action and print the result 
+println(square.collect().mkString(",")    
+```
+
+6. To exit Spark and close the Scala shell, press `ctrl-d` in the command-prompt window.
