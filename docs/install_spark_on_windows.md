@@ -35,3 +35,16 @@ By default, the installer will set java home folder at `C:\Program Files\Java\jd
 5. Add Hadoop dependencies. Spark requires some hadoop dependencies to run. For windows, we need to download a **winutils.exe**. You can find a [repo](https://github.com/cdarlint/winutils) which build this for all the hadoop version. Get the appropriate version based on your spark version. Then put it at a folder (consider it as the hadoop home folder). In this tutorail we choose `C:\opt\hadoop` as the `HADOOP_HOME`, so the `winutils.exe` goes into `C:\opt\hadoop\bin\winutils.exe`.
 
 ## 3. Setup Environment Variables
+
+We need to setup three environment variables here:
+- JAVA_HOME
+- SPARK_HOME
+- HADOOP_HOME
+
+You can follow below steps to create environment variables:
+1. Click on `search` toolbar, and type `environment`
+2. Select the result `Edit the system environment variables`
+3. A System Properties dialog box appears. In the lower-right corner, click Environment Variables and then click New in the next window.
+
+
+
