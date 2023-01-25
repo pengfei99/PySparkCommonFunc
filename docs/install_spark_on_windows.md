@@ -50,12 +50,19 @@ You can follow below steps to create environment variables:
 1. Click on `search` toolbar, and type `environment`
 2. Select the result `Edit the system environment variables`
 3. A System Properties dialog box appears. In the lower-right corner, click `Environment Variables` and then click `New` in the next window.
+
 ![windows-new-environment-variable1.png](../images/windows-new-environment-variable1.png)
+
 4. Create a new `environment variables` called `SPARK_HOME`, and put the path of the spark binary which you just downloaded. In our case it's `C:\opt\spark-3.2.3`
+
 ![windows-new-spark-env-variable.png](../images/windows-new-spark-env-variable.png)
+
 5. In the top box, click on the `Path` entry, then click `Edit`. Then add the `%SPARK_HOME%\bin` to the `Path`
+
 ![windows-edit-path-variable-spark.png](../images/windows-edit-path-variable-spark.png)
+
 Be careful here, don't try to delete the existing rows in the system path. Just add Spark.
+
 ![windows-add-spark-to-path.png](../images/windows-add-spark-to-path.png)
 
 
