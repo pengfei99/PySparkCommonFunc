@@ -32,7 +32,12 @@ By default, the installer will set java home folder at `C:\Program Files\Java\jd
 2. Choose a stable version. In this tutorial we have choosen `spark 3.2.3 with hadoop 3.2`
 3. Download .tgz
 4. Extract it to a path that you prefered. In this tutorial, we choose `C:\opt\spark-3.2.3`
-5. Add Hadoop dependencies. Spark requires some hadoop dependencies to run. For windows, we need to download a **winutils.exe**. You can find a [repo](https://github.com/cdarlint/winutils) which build this for all the hadoop version. Get the appropriate version based on your spark version. Then put it at a folder (consider it as the hadoop home folder). In this tutorail we choose `C:\opt\hadoop` as the `HADOOP_HOME`, so the `winutils.exe` goes into `C:\opt\hadoop\bin\winutils.exe`.
+
+### 2.1 Build hadoop dependencies
+
+Spark requires some hadoop dependencies to run. For linux, the required hadoop dpendencies are already included in the .tgz. 
+
+For windows, we need to download these dependencies manually (e.g. **winutils.exe, hadoop.dll, etc.**. You can find a [repo](https://github.com/cdarlint/winutils) which build the dependencies for all the hadoop version. Git clone the repo, and get the appropriate hadoop version based on your spark binary version. Then put all the required dependencies at a folder (consider it as the hadoop home folder). In this tutorail we choose `C:\opt\hadoop` as the `HADOOP_HOME`, so the `winutils.exe` goes into `C:\opt\hadoop\bin\winutils.exe`, and the `hadoop.dll` goes into `C:\opt\hadoop\bin\hadoop.dll`
 
 ## 3. Setup Environment Variables
 
