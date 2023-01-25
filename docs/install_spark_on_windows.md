@@ -66,7 +66,7 @@ Be careful here, don't try to delete the existing rows in the system path. Just 
 ![windows-add-spark-to-path.png](../images/windows-add-spark-to-path.png)
 
 
-> Note In the `Environment Variables` view, you have the upper part which edit the User env var(only effective for the current user). The lower part which edit the system env var (effective for users).  
+> Note In the `Environment Variables` view, you have the upper part which edit the User env var(only effective for the current user). The lower part which edit the system env var (effective for all users).  
 
 You can repeat the above process for `JAVA_HOME` and `HADOOP_HOME`. For the Hadoop, suppose we put the `winutils.exe` in `C:\opt\hadoop\bin\winutils.set`. Then we should set `C:\opt\hadoop` as the env var, and add the `%HADOOP_HOME%\bin` to the `Path`.
 
