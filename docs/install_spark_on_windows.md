@@ -89,11 +89,11 @@ Finally, the Spark logo appears, and the prompt displays the `Scala shell`.
 5. To test the spark functionality, Use below script
 ```scala
 // create a RDD based on a list
-val rdd = sc.parallelize(List(1,2,3,4)
+val rdd = sc.parallelize(List(1,2,3,4))
 // do a map operation             
 val square = rdd.map(x=>x*x)
 // do a spark action and print the result 
-println(square.collect().mkString(",")    
+println(square.collect().mkString(","))    
 ```
 
 6. To exit Spark and close the Scala shell, press `ctrl-d` in the command-prompt window.
