@@ -1,0 +1,37 @@
+# Install spark on debian
+
+## Install Java
+
+In general, you system package manager should provide a jdk. So the easiest way is to use your system package manager. 
+
+For example, below script works on Ubuntu and debian
+
+````shell
+# upgrade your package manager index and upgrade the packages
+sudo apt update && sudo apt -y full-upgrade
+
+# install other usefull tools
+sudo apt install curl mlocate -y
+
+# install open-jdk
+sudo apt install default-jdk -y
+
+# check your java version
+$ java -version
+openjdk version "11.0.14.1" 2022-02-08
+
+# if JAVA_HOME is not set, you need to add it to your .bashrc
+```
+
+## Download spark 
+
+```shell
+# get source
+wget https://dlcdn.apache.org/spark/spark-3.2.1/spark-3.2.1-bin-hadoop3.2.tgz
+
+# extract
+tar xvf spark-3.2.1-bin-hadoop3.2.tgz
+
+# copy source to target path
+sudo mv spark-3.2.1-bin-hadoop3.2/ /opt/spark 
+```
