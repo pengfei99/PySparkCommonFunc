@@ -6,7 +6,7 @@ In general, you system package manager should provide a jdk. So the easiest way 
 
 For example, below script works on Ubuntu and debian
 
-````shell
+```shell
 # upgrade your package manager index and upgrade the packages
 sudo apt update && sudo apt -y full-upgrade
 
@@ -34,4 +34,24 @@ tar xvf spark-3.2.1-bin-hadoop3.2.tgz
 
 # copy source to target path
 sudo mv spark-3.2.1-bin-hadoop3.2/ /opt/spark 
+```
+
+## Set up spark 
+
+create **spark.sh** in `/etc/profile.d/` and put below text in it.
+
+```shell
+# create the file
+sudo vim /etc/profile.d/spark.sh
+
+# add below text
+export SPARK_HOME=/opt/spark
+export PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin
+```
+
+## Test your spark
+
+```shell
+# open a spark shell
+spark-shell
 ```
