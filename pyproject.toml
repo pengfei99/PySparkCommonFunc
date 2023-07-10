@@ -17,6 +17,8 @@ notebook = "^6.0.0"
 #XlsxWriter = "^3.0.3"
 graphframes = "^0.6"
 apache-sedona = {extras = ["spark"], version = "^1.4.1"}
+geopandas = "0.11.1"
+shapely = "1.8.4"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.4.0"
