@@ -20,6 +20,7 @@ apache-sedona = {extras = ["spark"], version = "^1.4.1"}
 geopandas = "0.11.1"
 shapely = "1.8.4"
 keplergl = "^0.3.2"
+networkx = "^3.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.4.0"
