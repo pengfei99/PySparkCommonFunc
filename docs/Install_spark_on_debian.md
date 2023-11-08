@@ -27,13 +27,14 @@ openjdk version "11.0.14.1" 2022-02-08
 
 ```shell
 # get source
-wget https://dlcdn.apache.org/spark/spark-3.2.1/spark-3.2.1-bin-hadoop3.2.tgz
+wget https://dlcdn.apache.org/spark/spark-3.5.0/spark-3.5.0-bin-hadoop3.tgz
+# wget https://archive.apache.org/dist/spark/spark-3.5.0/spark-3.5.0-bin-hadoop3.tgz
 
 # extract
-tar xvf spark-3.2.1-bin-hadoop3.2.tgz
+tar xvf spark-3.5.0-bin-hadoop3.tgz
 
 # copy source to target path
-sudo mv spark-3.2.1-bin-hadoop3.2/ /opt/spark 
+sudo mv spark-3.5.0-bin-hadoop3/ /opt/spark 
 ```
 
 ## Set up spark 
@@ -47,6 +48,9 @@ sudo vim /etc/profile.d/spark.sh
 # add below text
 export SPARK_HOME=/opt/spark
 export PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin
+
+# refresh profile
+source /etc/profile.d/spark.sh
 ```
 
 ## Test your spark
