@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.types import StringType
 from pyspark.sql.functions import udf, col, split, when
@@ -48,8 +50,29 @@ pjc_df_1 = fna_dfs["pjc"].withColumn("alloc_det", when(col("KCALF").isNull, empt
                 .otherwise(unknown_str_val)
                 )
 
+# write df to hdfs
+# pjc_out_file_path = "hdfs:///test_pengfei/pjc_converted"
+# pjc_df_1.write.parquet(pjc_out_file_path)
 
-pjc_out_file_path = "hdfs:///test_pengfei/pjc_converted"
-pjc_df_1.write.parquet(pjc_out_file_path)
+# cache the dataframe
+pjc_df_1.cache()
+pjc_df_1.head()
+
+# date format str
+dateformat_str = "%Y-%m-%d"
+
+seuil_debut = datetime.strptime("2017-01-01", dateformat_str)
+seuil_fin = datetime.strptime("2023-08-31", dateformat_str)
+seuil_raz = datetime.strptime("2021-07-01", dateformat_str)
+seuil_fin_censure_17 = datetime.strptime("2018-08-31", dateformat_str)
+seuil_fin_censure_18 = datetime.strptime("2019-08-31", dateformat_str)
+seuil_fin_censure_19 = datetime.strptime("2020-08-31", dateformat_str)
+
+# step 3: create temp dataframe
+# 3.1 filter rows which KDDPJ date <= 2023-08-31
+temp = pjc_df_1.select("id_midas", "KROD3", "KCPJC", "KQBPJP", "KDDPJ", "KDFPJ", "KCFPP", "alloc") \
+    .filter(col("KDDPJ") <= seuil_fin) \
+    .groupBy("id_midas", "KROD3")
+
 # Stop the SparkSession
 spark.stop()

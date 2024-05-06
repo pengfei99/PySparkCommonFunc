@@ -2,8 +2,7 @@
 
 ## Advantage of spark submit
 
-We can use
-
+We can use deploy-mode **cluster**, the spark-driver can run inside the cluster.
 
 
 
