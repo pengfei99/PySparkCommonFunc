@@ -4,7 +4,7 @@
 
 We can use deploy-mode **cluster**, the spark-driver can run inside the cluster.
 
-
+> You will see an **AM(ApplicationMaster)** container created. For more details, visit this page https://hadoop.apache.org/docs/stable/hadoop-yarn/hadoop-yarn-site/WritingYarnApplications.html
 
 ## How to submit a job via spark submit
 
@@ -49,3 +49,4 @@ For example,
   --num-executors 4 \
   /path/to/pi.py 1000
 ```
+
