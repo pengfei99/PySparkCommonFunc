@@ -38,14 +38,19 @@ The general syntax of spark submit **python** version
 ```
 
 For example,  
+
+In spark submit cluster mode, we cant put the conf in the source code (e.g. sparkSession.builder.config()).It has no effect
+at all. **The configuration such as spark.yarn.am.cores and spark.yarn.am.memory only works in client mode**
 ```shell
 
 ./bin/spark-submit \
   --master yarn \
   --deploy-mode cluster \
-  --driver-memory 4G
+  --conf spark.yarn.queue=prod \
+  --conf spark.yarn.archive=hdfs:///system/libs/spark_libs.zip \
+  --driver-memory 4G \
   --executor-memory 4G \
-  --executor-cores 4
+  --executor-cores 4 \
   --num-executors 4 \
   /path/to/pi.py 1000
 ```
