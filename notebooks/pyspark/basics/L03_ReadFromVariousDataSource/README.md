@@ -2,6 +2,65 @@
 
 In this lesson, we will learn how to use spark to read/write data from various data sources.
 
+
+## schema determination
+
+When the data source file format is not structured such as `csv`,`json`, the schema of the dataframe is not given by
+the data source. You need to decide how to define the schema. You have three options:
+1. Give explicitly a schema (with spark StructType, StructField)
+2. Set infer schema = True
+3. Set infer schema = False
+
+### Give a schema
+
+You can define a schema with StructType, and StructField. when read the data source, you can provide the schema
+
+```python
+schema = StructType([
+StructField("customer_id”, IntegerType(), nullable=True),
+StructField("customer_name”, StringType(), nullable=True),
+StructField("salary”, DoubleType(), nullable=True)
+])
+```
+
+This method ensure that the schema is enforced and the data types are correctly assigned to the columns when loading the data.
+
+### Infer schema 
+
+When inferSchema is set to true , Spark scans the dataset (either a sample or the entire dataset, depending on configuration) 
+to automatically infer the data types of each column. For instance, if a column contains numeric values, Spark will infer it as IntegerType or DoubleType .
+
+The `data scanning to infer the schema occurs lazily`. This means the scanning process **does not happen immediately** 
+when you set inferSchema to true , but only when an action (such as show() , count () etc.) triggers the Dataframes evaluation.
+
+#### Disadvantages of Using inferSchema :
+
+- Performance Impact: Enabling inferSchema can significantly increase the time required to load large datasets, as Spark must scan the data to infer the types of each column. This process can be resource-intensive and slow, especially for large files.
+- Schema Accuracy Issues: Spark may not always infer the correct data types for certain columns, leading to 
+                        inaccuracies in data processing. Since Spark uses sampling to infer the schema, 
+                        the sample may not be fully representative of the entire dataset, which could result in 
+                        `incorrect data type assignments` or `runtime error`.
+- Handling Complex Data: Columns with mixed data types or edge cases in the data may not be correctly inferred, 
+                         leading to potential issues in downstream processing.
+
+#### Sampling Ratio
+
+When infer schema set to true, spark reads the **first 100 rows per partition** as sampling data to determine schema.
+
+You can set a custom value to overwrite the default value. The below code is an example
+
+```python
+# setting samplingRatio to 0.1 means Spark will scan 10% of the data to infer the schema, rather than first 100 rows 
+df = spark.read.option("inferSchema", "true").option("samplingRatio", 0.1).csv("data.csv")
+```
+
+
+> If data types are inconsistent across rows, you need to increase samplingRatio (e.g., 0.5 or 1.0)
+
+### Infer schema disabled 
+
+If you do not provide a schema and the infer-schema option is disabled. Spark will read all columns as string type
+
 ## Save mode
 
 All spark data source connector can be configured with below save mode options:
