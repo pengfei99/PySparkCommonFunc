@@ -129,4 +129,9 @@ dmypy.json
 .pyre/
 .idea/
 poetry.lock
+
+data/tmp
 psc_venv
+
+
+
